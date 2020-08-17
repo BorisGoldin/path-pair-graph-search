@@ -14,7 +14,7 @@
 
 // Types
 using Idx       = size_t;
-using CostType  = size_t;
+using CostType  = double;
 using EpsType   = double;
 
 template<typename T>

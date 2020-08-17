@@ -7,6 +7,10 @@ bool PPQueue::is_empty() {
     return this->queue.first.empty();
 }
 
+PathPairPtr PPQueue::peek() {
+    return *(this->queue.first.begin());
+}
+
 PathPairPtr PPQueue::pop() {
     // Pop from min heap
     PathPairPtr pp = *(this->queue.first.begin());
