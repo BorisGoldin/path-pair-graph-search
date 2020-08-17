@@ -54,7 +54,7 @@ bool load_gr_files(std::string gr_file1, std::string gr_file2, std::vector<Edge>
             Edge e = {
                 .source = std::stoul(decomposed_line1[1]),
                 .target = std::stoul(decomposed_line1[2]),
-                .cost   ={std::stoul(decomposed_line1[3]), std::stoul(decomposed_line2[3]), 0}
+                .cost   ={std::stod(decomposed_line1[3]), std::stod(decomposed_line2[3]), 0}
             };
             edges_out.push_back(e);
         }

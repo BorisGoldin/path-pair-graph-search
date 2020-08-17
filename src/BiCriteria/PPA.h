@@ -11,7 +11,7 @@
 
 class PPA: public BestFirstSearch
 {
-private:
+protected:
     Pair<EpsType>           eps;
 
     bool check_if_dominated(const PathPairPtr& pp, Idx target_vertex_id, std::vector<CostType>& min_cost2_to_vertex);
