@@ -1,11 +1,11 @@
-#ifndef UTILS_BEST_FIRST_SEARCH_H
-#define UTILS_BEST_FIRST_SEARCH_H
+#ifndef SEARCH_UTILS_BEST_FIRST_SEARCH_H
+#define SEARCH_UTILS_BEST_FIRST_SEARCH_H
 
 #include <sstream>
 #include "../Utils/Definitions.h"
 #include "../Utils/Logger.h"
-#include "../SearchNodes/SearchNode.h"
-#include "../SearchNodes/PathPair.h"
+#include "SearchNode.h"
+#include "PathPair.h"
 
 class BestFirstSearch
 {
@@ -107,4 +107,4 @@ public:
 #define LOG_INC_PATHS_EXPANDED(vertex_id)   ;
 #endif
 
-#endif //UTILS_BEST_FIRST_SEARCH_H
+#endif //SEARCH_UTILS_BEST_FIRST_SEARCH_H

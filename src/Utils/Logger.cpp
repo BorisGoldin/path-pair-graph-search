@@ -68,5 +68,5 @@ void Logger::finish_search(std::string finish_info_json) {
     this->log_filestream <<     "\t],\n"
                          <<     "\t\"finish_info\": " << insert_tabs_on_newline(finish_info_json,2) << ",\n"
                          <<     "\t\"total_runtime\": " << total_runtime_ms << "\n"
-                         << "}\n" << std::endl;
+                         << "},\n" << std::endl;
 }

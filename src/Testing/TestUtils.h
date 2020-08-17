@@ -2,7 +2,7 @@
 #define TESTING_TEST_UTILS_H
 
 #include "../Utils/Definitions.h"
-#include "../SearchNodes/SearchNode.h"
+#include "../SearchUtils/SearchNode.h"
 
 void validate_eps_domination(SearchNode::SolutionsSet& opt_solutions,
                              SearchNode::SolutionsSet& apx_solutions,
