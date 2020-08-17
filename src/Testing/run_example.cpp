@@ -4,8 +4,8 @@
 #include "../Utils/Definitions.h"
 #include "../Utils/IOUtils.h"
 #include "../Utils/Logger.h"
-#include "../SearchNodes/PathPair.h"
-#include "../SearchNodes/SearchNode.h"
+#include "../SearchUtils/PathPair.h"
+#include "../SearchUtils/SearchNode.h"
 #include "../BiCriteria/BOAStar.h"
 #include "../BiCriteria/PPA.h"
 
@@ -148,8 +148,8 @@ void NY_queries_short_test_case(LoggerPtr logger, EpsType eps) {
 
 int main(void) {
     LoggerPtr logger = std::make_shared<Logger>("log.txt");
-    // simple_test_case(logger, 0.1);
-    NY_single_test_case(logger, 0);
+    simple_test_case(logger, 0.1);
+    NY_single_test_case(logger, 0.1);
     // NY_queries_short_test_case(logger, 0);
     // NY_queries_short_test_case(logger, 0.1);
     // NY_queries_short_test_case(logger, 0.015);

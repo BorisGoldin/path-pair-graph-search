@@ -1,5 +1,5 @@
-#ifndef SEARCH_NODES_SEARCH_NODE_H
-#define SEARCH_NODES_SEARCH_NODE_H
+#ifndef SEARCH_UTILS_NODES_SEARCH_NODE_H
+#define SEARCH_UTILS_NODES_SEARCH_NODE_H
 
 #include <iostream>
 #include <set>
@@ -55,6 +55,6 @@ public:
     friend std::ostream& operator<<(std::ostream& stream, const SearchNode& node);
 };
 
-#endif //SEARCH_NODES_SEARCH_NODE_H
+#endif //SEARCH_UTILS_NODES_SEARCH_NODE_H
 
 

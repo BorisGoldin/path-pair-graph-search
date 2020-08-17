@@ -3,7 +3,7 @@
 
 #include <set>
 #include "../Utils/Definitions.h"
-#include "../SearchNodes/SearchNode.h"
+#include "../SearchUtils/SearchNode.h"
 
 class ShortestPathHeuristic
 {

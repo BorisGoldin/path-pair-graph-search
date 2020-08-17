@@ -1,37 +1,7 @@
 #include "PPA.h"
 
-PPA::PPA(const AdjacencyMatrix& adj_matrix, Pair<double> eps, LoggerPtr logger)
+PPA::PPA(const AdjacencyMatrix& adj_matrix, Pair<EpsType> eps, LoggerPtr logger)
     : BestFirstSearch(adj_matrix, logger), eps(eps) {}
-
-bool PPA::is_queue_empty(PPQueue& queue) {
-    return PPA::get_min_heap(queue).empty();
-}
-
-PPA::PPMinHeap& PPA::get_min_heap(PPQueue& queue) {return queue.first;}
-
-PPA::PPOpenMap& PPA::get_open_map(PPQueue& queue) {return queue.second;}
-
-PathPairPtr PPA::pop_from_queue(PPQueue& queue) {
-    // Pop from min heap
-    PathPairPtr pp = *(PPA::get_min_heap(queue).begin());
-    PPA::get_min_heap(queue).erase(PPA::get_min_heap(queue).begin());
-
-    // Remove from open map
-    std::list<PathPairPtr>& relevant_pps = PPA::get_open_map(queue)[pp->get_vertex_id()];    
-    for (auto iter = relevant_pps.begin(); iter != relevant_pps.end(); ++iter) {
-        if (pp == *iter) {
-            relevant_pps.erase(iter);
-            break;
-        }
-    }
-
-    return pp;
-}
-
-void PPA::insert_to_queue(PathPairPtr& pp, PPQueue& queue) {
-    PPA::get_min_heap(queue).insert(pp);
-    PPA::get_open_map(queue)[pp->get_vertex_id()].push_back(pp);
-}
 
 bool PPA::check_if_dominated(const PathPairPtr& pp, Idx target_vertex_id, std::vector<CostType>& min_path_cost2) {
     if (pp->get_bottom_right()->get_cost_until_now()[1] >= min_path_cost2[pp->get_bottom_right()->get_vertex_id()]) {
@@ -51,7 +21,7 @@ PathPairPtr PPA::extend_path_pair(const PathPairPtr& pp, const Edge& edge, Heuri
 }
 
 void PPA::insert(PathPairPtr& pp, PPQueue& queue) {
-    std::list<PathPairPtr> &relevant_pps = PPA::get_open_map(queue)[pp->get_vertex_id()];
+    std::list<PathPairPtr> &relevant_pps = queue.get_open_pps(pp->get_vertex_id());
     for (auto p_existing_pp = relevant_pps.begin(); p_existing_pp != relevant_pps.end(); ++p_existing_pp) {
         if ((*p_existing_pp)->is_active() == false) {
             continue;
@@ -63,12 +33,12 @@ void PPA::insert(PathPairPtr& pp, PPQueue& queue) {
                 // merged_pp != (*p_existing_pp), therefore we remove (*p_existing_pp) and insert merged_pp instead 
                 // (pp is not fully dominated by an opened pp)
                 (*p_existing_pp)->deactivate();
-                PPA::insert_to_queue(pp, queue);
+                queue.insert(pp);
             }
             return;
         }
     }
-    PPA::insert_to_queue(pp, queue);
+    queue.insert(pp);
 }
 
 void PPA::merge_to_solutions(const PathPairPtr& pp, PathPair::SolutionsSet& solutions) {
@@ -86,9 +56,7 @@ void PPA::operator()(const Idx source_vertex_id,
                      Heuristic& heuristic) {
     this->log_search_start(source_vertex_id, target_vertex_id, "PPA", {this->eps[0], this->eps[1], 0});
 
-    PPMinHeap                   min_heap;
-    PPOpenMap                   open_map(adj_matrix.get_number_of_vertices()+1, std::list<PathPairPtr>());
-    PPQueue                     open_queue(min_heap, open_map);
+    PPQueue                     open_queue(adj_matrix.get_number_of_vertices());
     std::vector<CostType>       min_path_cost2(adj_matrix.get_number_of_vertices()+1, MAX_COST);
     PathPair::SolutionsSet      pp_solutions;
 
@@ -98,11 +66,11 @@ void PPA::operator()(const Idx source_vertex_id,
     PathPairPtr source_pp = std::make_shared<PathPair>(source_node, source_node);
     this->insert(source_pp, open_queue);
 
-    while (PPA::is_queue_empty(open_queue) == false) {
+    while (open_queue.is_empty() == false) {
         LOG_INC_LOOP_COUNT();
 
         // Pop min from queue and process            
-        PathPairPtr pp = PPA::pop_from_queue(open_queue);
+        PathPairPtr pp = open_queue.pop();
 
         // Optimization: PathPairs are being deactivated instead of being removed so we skip them.
         if (pp->is_active() == false) {

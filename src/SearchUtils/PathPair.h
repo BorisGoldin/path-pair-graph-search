@@ -1,5 +1,5 @@
-#ifndef SEARCH_NODES_PATH_PAIR_H
-#define SEARCH_NODES_PATH_PAIR_H
+#ifndef SEARCH_UTILS_NODES_PATH_PAIR_H
+#define SEARCH_UTILS_NODES_PATH_PAIR_H
 
 #include <set>
 #include "SearchNode.h"
@@ -46,4 +46,4 @@ public:
     friend std::ostream& operator<<(std::ostream& stream, const PathPair& pp);
 };
 
-#endif //SEARCH_NODES_PATH_PAIR_H
+#endif //SEARCH_UTILS_NODES_PATH_PAIR_H
