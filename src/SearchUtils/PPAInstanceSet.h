@@ -1,6 +1,9 @@
 #ifndef SEARCH_UTILS_PPA_INSTANCE_SET_H
 #define SEARCH_UTILS_PPA_INSTANCE_SET_H
 
+#if 0
+
+
 #include <set>
 #include <vector>
 #include <algorithm>
@@ -31,6 +34,7 @@ struct PPAInstance
 			min_path_cost2(min_path_cost2),
 			solutions(solutions) {};
 	bool can_extend(CostType cost3_1, CostType cost3_2, EpsType eps3);
+	void extend(CostType cost3_1, CostType cost3_2);
 
 	struct less_than_min_cost {
         bool operator()(const PPAInstancePtr a, const PPAInstancePtr b) const;
@@ -53,6 +57,8 @@ public:
     PPAInstancePtr get_matching_instance(PathPairPtr pp);
     PathPair::SolutionsSet get_solutions();
 };
+
+#endif
 
 #endif //SEARCH_UTILS_PPA_INSTANCE_SET_H
 

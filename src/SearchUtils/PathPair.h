@@ -18,10 +18,10 @@ private:
 
 public:
     PathPair() = default;
-    PathPair(SearchNodePtr top_left, SearchNodePtr bottom_right);
+    PathPair(const SearchNodePtr &top_left, const SearchNodePtr &bottom_right);
 
-    void update_nodes(SearchNodePtr top_left, SearchNodePtr bottom_right);
-    bool update_nodes_by_merge_if_bounded(const PathPairPtr& other, const Pair<double> eps, bool use_heuristic=false);
+    void update_nodes(const SearchNodePtr &top_left, const SearchNodePtr &bottom_right);
+    bool update_nodes_by_merge_if_bounded(const PathPairPtr &other, const Pair<double> eps, bool use_heuristic=false);
 
     Idx get_vertex_id() const;
     SearchNodePtr get_top_left() const;
@@ -32,18 +32,18 @@ public:
 
     void deactivate();
 
-    static PathPairPtr extend(const PathPairPtr& node, const Edge& edge, Pair<CostType> future_heuristic_cost);
-    static PathPairPtr merge(const PathPairPtr& a, const PathPairPtr& b, bool use_heuristic=false);
+    static PathPairPtr extend(const PathPairPtr &node, const Edge edge, Triplet<CostType> future_heuristic_cost);
+    static PathPairPtr merge(const PathPairPtr &a, const PathPairPtr &b, bool use_heuristic=false);
 
     struct less_than_full_costs {
-        bool operator()(const PathPairPtr& a, const PathPairPtr& b) const;
+        bool operator()(const PathPairPtr &a, const PathPairPtr &b) const;
     };
 
     using SolutionsSet = std::vector<PathPairPtr>;
 
-    static SearchNode::SolutionsSet solutions_from_path_pair_solutions(const PathPair::SolutionsSet& pp_solutions);
+    static SearchNode::SolutionsSet solutions_from_path_pair_solutions(const PathPair::SolutionsSet &pp_solutions);
 
-    friend std::ostream& operator<<(std::ostream& stream, const PathPair& pp);
+    friend std::ostream& operator<<(std::ostream &stream, const PathPair &pp);
 };
 
 #endif //SEARCH_UTILS_NODES_PATH_PAIR_H

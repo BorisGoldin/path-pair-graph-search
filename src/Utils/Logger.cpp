@@ -5,7 +5,8 @@
 
 std::string insert_tabs_on_newline(std::string str, size_t tabs_amount) {
     std::string replace = "\n";
-    while (tabs_amount-- != 0) {
+    while (tabs_amount != 0) {
+        tabs_amount -= 1;
         replace += "\t";
     }
 
@@ -50,7 +51,7 @@ void Logger::start_search(Idx source, Idx target, std::string search_info_json) 
 
 void Logger::log_event(std::string message) {
     this->run_time_since_previous_log_ms = this->total_run_duration_ms;
-    this->total_run_duration_ms = 
+    this->total_run_duration_ms =
         std::chrono::duration_cast<std::chrono::milliseconds>(Clock::now() - this->run_start_time).count();
     this->run_time_since_previous_log_ms =
         this->total_run_duration_ms - this->run_time_since_previous_log_ms;
@@ -63,10 +64,10 @@ void Logger::log_event(std::string message) {
 };
 
 void Logger::finish_search(std::string finish_info_json) {
-    long int total_runtime_ms = 
+    long int total_runtime_ms =
         std::chrono::duration_cast<std::chrono::milliseconds>(Clock::now() - this->run_start_time).count();
     this->log_filestream <<     "\t],\n"
                          <<     "\t\"finish_info\": " << insert_tabs_on_newline(finish_info_json,2) << ",\n"
-                         <<     "\t\"total_runtime\": " << total_runtime_ms << "\n"
+                         <<     "\t\"total_runtime(ms)\": " << total_runtime_ms << "\n"
                          << "},\n" << std::endl;
 }

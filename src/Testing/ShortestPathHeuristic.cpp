@@ -1,7 +1,7 @@
 #include "ShortestPathHeuristic.h"
 
 ShortestPathHeuristic::ShortestPathHeuristic(const AdjacencyMatrix& adj_matrix,
-                                             Idx source_vertex_id) 
+                                             Idx source_vertex_id)
                                                 : adj_matrix(adj_matrix),
                                                   shortest_path_cost(adj_matrix.get_number_of_vertices()+1,
                                                                      Triplet<CostType>({MAX_COST, MAX_COST, MAX_COST})),
@@ -22,22 +22,21 @@ void ShortestPathHeuristic::compute(size_t cost_idx) {
     open.insert(source_node);
 
     while (open.empty() == false) {
-        // Pop min from queue and process            
+        // Pop min from queue and process
         SearchNodePtr node = *(open.begin());
         open.erase(open.begin());
 
-        // Go over all neighbors and extend 
-        const std::vector<Edge>& outgoing_edges = adj_matrix[node->get_vertex_id()];
-        for (size_t i = 0; i < outgoing_edges.size(); ++i) {
+        const std::list<Edge>& outgoing_edges = adj_matrix[node->get_vertex_id()];
+        for(auto p_edge = outgoing_edges.begin(); p_edge != outgoing_edges.end(); p_edge++) {
             // Create new node
-            SearchNodePtr neighbor = this->extend_node(node, outgoing_edges[i]);
+            SearchNodePtr neighbor = this->extend_node(node, *p_edge);
             if (neighbor == nullptr) {
                 continue;
             }
 
             // Check if search node is dominated
-            if (this->shortest_path_cost[neighbor->get_vertex_id()][cost_idx] <= 
-                neighbor->get_cost_until_now()[cost_idx]) {
+            if (this->shortest_path_cost[neighbor->get_vertex_id()][cost_idx] <=
+                    neighbor->get_cost_until_now()[cost_idx]) {
                 continue;
             };
 

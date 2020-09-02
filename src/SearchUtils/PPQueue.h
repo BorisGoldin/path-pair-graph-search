@@ -21,7 +21,7 @@ public:
     bool is_empty();
     PathPairPtr peek();
     PathPairPtr pop();
-    void insert(PathPairPtr& pp);
+    void insert(PathPairPtr &pp);
     std::list<PathPairPtr>& get_open_pps(Idx vertex_id);
 };
 

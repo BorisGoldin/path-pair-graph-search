@@ -12,8 +12,8 @@ class BestFirstSearch
 protected:
     using GeneralSearchNodePtr = SearchNodePtr;
 
-    const AdjacencyMatrix&  adj_matrix;
-    LoggerPtr               logger = nullptr;
+    const AdjacencyMatrix   &adj_matrix;
+    const LoggerPtr         logger = nullptr;
 
     #if (DEBUG >= 2)
     size_t                  loop_count = 0;
@@ -45,39 +45,43 @@ protected:
     void log_search_finish(SearchNode::SolutionsSet solutions) {
         std::stringstream finish_info_json;
         finish_info_json
-            << "{\n"
-            <<      "\t\"solutions\": [" << std::endl;
+            << "{" << std::endl;
 
-        for (auto solution = solutions.begin(); solution != solutions.end(); ++solution) {
-            finish_info_json << "\t\t" << **solution << "," << std::endl;
-        }
+        #if (DEBUG >= 2)
+            finish_info_json
+                <<      "\t\"solutions\": [" << std::endl;
+            size_t solutions_count = 0;
+            for (auto solution = solutions.begin(); solution != solutions.end(); ++solution) {
+                finish_info_json << "\t\t" << **solution << "," << std::endl;
+                solutions_count++;
+            }
 
-        finish_info_json
-            <<      "\t]," << std::endl;
+            finish_info_json
+                <<      "\t],\n"
+                <<      "\t\"amount_of_solutions\": " << solutions_count << "," << std::endl;
 
-    #if (DEBUG >= 2)
-        size_t sum_num_of_paths_generated = 0;
-        size_t sum_num_of_paths_popped  = 0;
-        size_t sum_num_of_paths_expanded = 0;       
+            size_t sum_num_of_paths_generated = 0;
+            size_t sum_num_of_paths_popped  = 0;
+            size_t sum_num_of_paths_expanded = 0;
 
-        for (auto iter = num_of_paths_generated.begin(); iter != num_of_paths_generated.end(); ++iter) {
-            sum_num_of_paths_generated += iter->second;
-        }
-        for (auto iter = num_of_paths_popped.begin(); iter != num_of_paths_popped.end(); ++iter) {
-            sum_num_of_paths_popped += iter->second;
-        } 
-        for (auto iter = num_of_paths_expanded.begin(); iter != num_of_paths_expanded.end(); ++iter) {
-            sum_num_of_paths_expanded += iter->second;
-        }  
+            for (auto iter = num_of_paths_generated.begin(); iter != num_of_paths_generated.end(); ++iter) {
+                sum_num_of_paths_generated += iter->second;
+            }
+            for (auto iter = num_of_paths_popped.begin(); iter != num_of_paths_popped.end(); ++iter) {
+                sum_num_of_paths_popped += iter->second;
+            }
+            for (auto iter = num_of_paths_expanded.begin(); iter != num_of_paths_expanded.end(); ++iter) {
+                sum_num_of_paths_expanded += iter->second;
+            }
 
-        finish_info_json
-            <<      "\t\"loop_count\": " << this->loop_count << ",\n"
-            <<      "\t\"num_of_paths_pruned_by_node\": " << this->num_of_paths_pruned_by_node << ",\n"
-            <<      "\t\"num_of_paths_pruned_by_solution\": " << this->num_of_paths_pruned_by_solution << ",\n"
-            <<      "\t\"sum_num_of_paths_generated\": " << sum_num_of_paths_generated << ",\n"
-            <<      "\t\"sum_num_of_paths_popped\": " << sum_num_of_paths_popped << ",\n"
-            <<      "\t\"sum_num_of_paths_expanded\": " << sum_num_of_paths_expanded << "," << std::endl;
-    #endif
+            finish_info_json
+                <<      "\t\"loop_count\": " << this->loop_count << ",\n"
+                <<      "\t\"num_of_paths_pruned_by_node\": " << this->num_of_paths_pruned_by_node << ",\n"
+                <<      "\t\"num_of_paths_pruned_by_solution\": " << this->num_of_paths_pruned_by_solution << ",\n"
+                <<      "\t\"sum_num_of_paths_generated\": " << sum_num_of_paths_generated << ",\n"
+                <<      "\t\"sum_num_of_paths_popped\": " << sum_num_of_paths_popped << ",\n"
+                <<      "\t\"sum_num_of_paths_expanded\": " << sum_num_of_paths_expanded << "," << std::endl;
+        #endif
 
         finish_info_json
             << "}";
@@ -87,8 +91,8 @@ protected:
 
 
 public:
-    BestFirstSearch(const AdjacencyMatrix& adj_matrix, LoggerPtr logger=nullptr) : adj_matrix(adj_matrix), logger(logger) {};
-    void operator()(const Idx source_vertex_id, const  Idx target_vertex_id, SearchNode::SolutionsSet& solutions, Heuristic& heuristic);
+    BestFirstSearch(const AdjacencyMatrix &adj_matrix, const LoggerPtr &logger=nullptr) : adj_matrix(adj_matrix), logger(logger) {};
+    void operator()(const Idx source_vertex_id, const  Idx target_vertex_id, SearchNode::SolutionsSet &solutions, Heuristic &heuristic);
 };
 
 #if (DEBUG >= 2)

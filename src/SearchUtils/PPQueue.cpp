@@ -17,7 +17,7 @@ PathPairPtr PPQueue::pop() {
     this->queue.first.erase(this->queue.first.begin());
 
     // Remove from open map
-    std::list<PathPairPtr>& relevant_pps = this->queue.second[pp->get_vertex_id()];    
+    std::list<PathPairPtr>& relevant_pps = this->queue.second[pp->get_vertex_id()];
     for (auto iter = relevant_pps.begin(); iter != relevant_pps.end(); ++iter) {
         if (pp == *iter) {
             relevant_pps.erase(iter);
@@ -28,7 +28,7 @@ PathPairPtr PPQueue::pop() {
     return pp;
 }
 
-void PPQueue::insert(PathPairPtr& pp) {
+void PPQueue::insert(PathPairPtr &pp) {
     this->queue.first.insert(pp);
     this->queue.second[pp->get_vertex_id()].push_back(pp);
 }

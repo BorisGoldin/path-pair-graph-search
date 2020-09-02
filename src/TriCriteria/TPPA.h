@@ -1,6 +1,8 @@
 #ifndef TRI_CRITERIA_TPPA_H
 #define TRI_CRITERIA_TPPA_H
 
+
+#if 0
 #include <set>
 #include <vector>
 #include <list>
@@ -17,9 +19,10 @@ private:
     CostType eps3;
 
 public:
-    TPPA(const AdjacencyMatrix& adj_matrix, Triplet<EpsType> eps, LoggerPtr logger=nullptr) 
+    TPPA(const AdjacencyMatrix& adj_matrix, Triplet<EpsType> eps, LoggerPtr logger=nullptr)
         : PPA(adj_matrix, {eps[0], eps[1]}, logger), eps3(eps[2]) {};
     void operator()(const Idx source_vertex_id, const Idx target_vertex_id, SearchNode::SolutionsSet& solutions, Heuristic& heuristic);
 };
+#endif
 
 #endif //TRI_CRITERIA_TPPA_H

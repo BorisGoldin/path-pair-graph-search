@@ -2,28 +2,28 @@
 #include "SearchNode.h"
 
 SearchNode::SearchNode(const Idx vertex_id,
-                       SearchNodePtr parent,
+                       const SearchNodePtr &parent,
                        Pair<CostType> cost_until_now,
-                       Pair<CostType> future_heuristic_cost)
+                       Triplet<CostType> future_heuristic_cost)
                         : vertex_id(vertex_id),
-                          parent(parent), 
+                          parent(parent),
                           cost_until_now({cost_until_now[0], cost_until_now[1], 0}),
-                          future_heuristic_cost({future_heuristic_cost[0], future_heuristic_cost[1], 0}) {}
+                          future_heuristic_cost(future_heuristic_cost) {}
 
 SearchNode::SearchNode(const Idx vertex_id,
-                       SearchNodePtr parent,
+                       const SearchNodePtr &parent,
                        Triplet<CostType> cost_until_now,
                        Triplet<CostType> future_heuristic_cost)
                         : vertex_id(vertex_id),
-                          parent(parent), 
+                          parent(parent),
                           cost_until_now(cost_until_now),
                           future_heuristic_cost(future_heuristic_cost) {}
 
-SearchNode::SearchNode(const SearchNodePtr& other) {
+SearchNode::SearchNode(const SearchNodePtr &other) {
 	this->deep_copy(other);
 }
 
-void SearchNode::deep_copy(const SearchNodePtr& other) {
+void SearchNode::deep_copy(const SearchNodePtr &other) {
     this->vertex_id = other->get_vertex_id();
     this->parent = other->get_parent();
     this->cost_until_now = other->get_cost_until_now();
@@ -52,21 +52,16 @@ Triplet<CostType> SearchNode::get_full_cost() const {
             this->cost_until_now[2] + this->future_heuristic_cost[2]};
 }
 
-bool SearchNode::is_dominated_by(const SearchNodePtr& other, Triplet<double> eps, bool use_heuristic) const {
+bool SearchNode::is_dominated_by(const SearchNodePtr &other, Triplet<double> eps, bool use_heuristic) const {
     Triplet<CostType> this_cost = use_heuristic ? this->get_full_cost() : this->get_cost_until_now();
     Triplet<CostType> other_cost = use_heuristic ? other->get_full_cost() : other->get_cost_until_now();
 
-    return ((other_cost[0] <= (1 + eps[0]) * this_cost[0]) &&
-            (other_cost[1] <= (1 + eps[1]) * this_cost[1]) &&
-            (other_cost[2] <= (1 + eps[2]) * this_cost[2]));
+    return ((other_cost[0] <= ((1 + eps[0]) * this_cost[0])) &&
+            (other_cost[1] <= ((1 + eps[1]) * this_cost[1])) &&
+            (other_cost[2] <= ((1 + eps[2]) * this_cost[2])));
 }
 
-SearchNodePtr SearchNode::extend(const SearchNodePtr& node, const Edge& edge, Pair<CostType> future_heuristic_cost) {
-    Triplet<CostType> heuristic_cost_triplet = {future_heuristic_cost[0], future_heuristic_cost[1], 0};
-    return SearchNode::extend(node, edge, heuristic_cost_triplet);
-}
-
-SearchNodePtr SearchNode::extend(const SearchNodePtr& node, const Edge& edge, Triplet<CostType> future_heuristic_cost) {
+SearchNodePtr SearchNode::extend(const SearchNodePtr &node, const Edge edge, Triplet<CostType> future_heuristic_cost) {
     if ((node->get_vertex_id() != edge.source) ||
         ((node->get_parent() != nullptr) && (node->get_parent()->get_vertex_id() == edge.target))) {
         return nullptr;
@@ -81,7 +76,7 @@ SearchNodePtr SearchNode::extend(const SearchNodePtr& node, const Edge& edge, Tr
     return std::make_shared<SearchNode>(edge.target, node, new_cost_until_now, future_heuristic_cost);
 }
 
-bool SearchNode::less_than_full_costs::operator()(const SearchNodePtr& a, const SearchNodePtr& b) const {
+bool SearchNode::less_than_full_costs::operator()(const SearchNodePtr &a, const SearchNodePtr &b) const {
     Triplet<CostType> a_cost = a->get_full_cost();
     Triplet<CostType> b_cost = b->get_full_cost();
 
@@ -94,7 +89,7 @@ bool SearchNode::less_than_full_costs::operator()(const SearchNodePtr& a, const 
     }
 }
 
-bool SearchNode::less_than_specific_cost_until_now::operator()(const SearchNodePtr& a, const SearchNodePtr& b) const {
+bool SearchNode::less_than_specific_cost_until_now::operator()(const SearchNodePtr &a, const SearchNodePtr &b) const {
     CostType a_cost = a->get_cost_until_now()[cost_idx];
     CostType b_cost = b->get_cost_until_now()[cost_idx];
 
@@ -105,7 +100,7 @@ bool SearchNode::less_than_specific_cost_until_now::operator()(const SearchNodeP
     }
 }
 
-std::ostream& operator<<(std::ostream& stream, const SearchNode& node) {
+std::ostream& operator<<(std::ostream &stream, const SearchNode &node) {
     std::string parent_id = node.get_parent() == nullptr ? "-1" : std::to_string(node.get_parent()->get_vertex_id());
     stream
         << "{"

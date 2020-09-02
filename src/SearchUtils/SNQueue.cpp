@@ -1,6 +1,6 @@
 #include "SNQueue.h"
 
-SNQueue::SNQueue(size_t number_of_vertices) 
+SNQueue::SNQueue(size_t number_of_vertices)
     : queue(SNMinHeap(), SNOpenMap(number_of_vertices+1, std::list<SearchNodePtr>())) {}
 
 bool SNQueue::is_empty() {
@@ -20,11 +20,15 @@ SearchNodePtr SNQueue::pop() {
             break;
         }
     }
-    
+
     return node;
 }
 
-void SNQueue::insert(SearchNodePtr& node) {
+void SNQueue::insert(SearchNodePtr &node) {
     this->queue.first.insert(node);
     this->queue.second[node->get_vertex_id()].push_back(node);
+}
+
+std::list<SearchNodePtr>& SNQueue::get_open_for_node(const SearchNodePtr &node) {
+    return this->queue.second[node->get_vertex_id()];
 }

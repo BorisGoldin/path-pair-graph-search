@@ -1,4 +1,5 @@
 #include "TPPA.h"
+#if 0
 
 void TPPA::operator()(const Idx source_vertex_id,
                       const Idx target_vertex_id,
@@ -8,18 +9,19 @@ void TPPA::operator()(const Idx source_vertex_id,
 
     PPAInstanceSet  ppa_instance_set(adj_matrix.get_number_of_vertices(), this->eps3);
 
-    // Add source node to open queue    
-    SearchNodePtr source_node = 
+    // Add source node to open queue
+    SearchNodePtr source_node =
         std::make_shared<SearchNode>(source_vertex_id, nullptr, Triplet<CostType>({0,0,0}), heuristic(source_vertex_id));
     PathPairPtr source_pp = std::make_shared<PathPair>(source_node, source_node);
 
     PPAInstancePtr init_ppa_instance = ppa_instance_set.get_matching_instance(source_pp);
+    init_ppa_instance->extend(source_pp->get_top_left()->get_cost_until_now()[2],
+                              source_pp->get_bottom_right()->get_cost_until_now()[2]);
     this->insert(source_pp, init_ppa_instance->open_queue);
 
     while (ppa_instance_set.is_empty() == false) {
         LOG_INC_LOOP_COUNT();
-
-        // Pop min from queue and process            
+        // Pop min from queue and process
         std::pair<PathPairPtr, PPAInstancePtr> search_context = ppa_instance_set.pop();
         PathPairPtr     pp = search_context.first;
         PPAInstancePtr  ppa_instance = search_context.second;
@@ -45,7 +47,7 @@ void TPPA::operator()(const Idx source_vertex_id,
             continue;
         }
 
-        // Go over all neighbors and extend 
+        // Go over all neighbors and extend
         const std::vector<Edge>& outgoing_edges = adj_matrix[pp->get_vertex_id()];
         for (size_t j = 0; j < outgoing_edges.size(); ++j) {
             // Create new node
@@ -63,6 +65,7 @@ void TPPA::operator()(const Idx source_vertex_id,
 
             // Check if split is needed
             if (ppa_instance_set.is_split_needed(neighbor_pp)) {
+
                 PathPairPtr top_left_pp = std::make_shared<PathPair>(neighbor_pp->get_top_left(), neighbor_pp->get_top_left());
                 PathPairPtr bottom_right_pp = std::make_shared<PathPair>(neighbor_pp->get_bottom_right(), neighbor_pp->get_bottom_right());
 
@@ -70,15 +73,22 @@ void TPPA::operator()(const Idx source_vertex_id,
                 PPAInstancePtr bottom_right_ppa_instance = ppa_instance_set.get_matching_instance(bottom_right_pp);
 
                 if (this->check_if_dominated(neighbor_pp, target_vertex_id, top_left_ppa_instance->min_path_cost2) == false) {
+                    top_left_ppa_instance->extend(top_left_pp->get_top_left()->get_cost_until_now()[2],
+                                                  top_left_pp->get_bottom_right()->get_cost_until_now()[2]);
                     this->insert(top_left_pp, top_left_ppa_instance->open_queue);
                 }
                 if (this->check_if_dominated(neighbor_pp, target_vertex_id, bottom_right_ppa_instance->min_path_cost2) == false) {
+                    bottom_right_ppa_instance->extend(bottom_right_pp->get_top_left()->get_cost_until_now()[2],
+                                                      bottom_right_pp->get_bottom_right()->get_cost_until_now()[2]);
                     this->insert(bottom_right_pp, bottom_right_ppa_instance->open_queue);
                 }
-
             } else {
+
                 PPAInstancePtr neighbor_ppa_instance = ppa_instance_set.get_matching_instance(neighbor_pp);
+
                 if (this->check_if_dominated(neighbor_pp, target_vertex_id, neighbor_ppa_instance->min_path_cost2) == false) {
+                    neighbor_ppa_instance->extend(neighbor_pp->get_top_left()->get_cost_until_now()[2],
+                                                  neighbor_pp->get_bottom_right()->get_cost_until_now()[2]);
                     this->insert(neighbor_pp, neighbor_ppa_instance->open_queue);
                 }
             }
@@ -90,3 +100,5 @@ void TPPA::operator()(const Idx source_vertex_id,
 
     this->log_search_finish(solutions);
 }
+
+#endif

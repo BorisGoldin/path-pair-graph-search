@@ -2,7 +2,7 @@
 #define UTILS_LOGGER_H
 
 #include <string>
-#include <fstream> 
+#include <fstream>
 #include <sstream>
 #include "Definitions.h"
 

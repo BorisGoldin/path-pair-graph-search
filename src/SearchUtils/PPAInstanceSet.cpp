@@ -1,11 +1,19 @@
 #include "PPAInstanceSet.h"
 
+#if 0
+
+
 bool PPAInstance::can_extend(CostType cost3_1, CostType cost3_2, EpsType eps3) {
 	CostType extended_min = std::min({this->cost3_min, cost3_1, cost3_2});
 	CostType extended_max = std::max({this->cost3_max, cost3_1, cost3_2});
 
 	// Extention is possible if instance is still eps3 bounded after extention
 	return ((extended_min * (1 + eps3)) >= extended_max);
+}
+
+void PPAInstance::extend(CostType cost3_1, CostType cost3_2) {
+	this->cost3_min = std::min({this->cost3_min, cost3_1, cost3_2});
+	this->cost3_max = std::max({this->cost3_max, cost3_1, cost3_2});
 }
 
 bool PPAInstance::less_than_min_cost::operator()(const PPAInstancePtr a, const PPAInstancePtr b) const {
@@ -24,9 +32,15 @@ bool PPAInstanceSet::is_empty() {
 std::pair<PathPairPtr, PPAInstancePtr> PPAInstanceSet::pop() {
 	PPAInstancePtr instance_to_pop = nullptr;
 	for (auto instance = this->ppa_instances.begin(); instance != this->ppa_instances.end(); ++instance) {
-		if ((instance_to_pop == nullptr) || 
-			PathPair::less_than_full_costs()((*instance)->open_queue.peek(), instance_to_pop->open_queue.peek())) {
-			instance_to_pop = *instance;
+		if (instance_to_pop == nullptr) {
+			if ((*instance)->open_queue.is_empty() == false) {
+				instance_to_pop = *instance;
+			}
+		} else {
+			if (((*instance)->open_queue.is_empty() == false) &&
+			    (PathPair::less_than_full_costs()((*instance)->open_queue.peek(), instance_to_pop->open_queue.peek()))) {
+				instance_to_pop = *instance;
+			}
 		}
 	}
 	return {instance_to_pop->open_queue.pop(), instance_to_pop};
@@ -48,7 +62,7 @@ bool PPAInstanceSet::is_split_needed(PathPairPtr pp) {
 		auto next_instance = std::next(instance, 1);
 
     	CostType current_cost3_min = (*instance)->cost3_min;
-		CostType current_cost3_max = (*instance)->cost3_max;    	
+		CostType current_cost3_max = (*instance)->cost3_max;
     	CostType next_cost3_min;
 		CostType next_cost3_max;
 
@@ -111,13 +125,15 @@ bool PPAInstanceSet::is_split_needed(PathPairPtr pp) {
 PPAInstancePtr PPAInstanceSet::get_matching_instance(PathPairPtr pp) {
 	// Should be called only on pp that should not be split
 	CostType pp_top_left_cost3 = pp->get_top_left()->get_cost_until_now()[2];
+	CostType pp_bottom_right_cost3 	= pp->get_bottom_right()->get_cost_until_now()[2];
+
 	for (auto instance = this->ppa_instances.begin(); instance != this->ppa_instances.end(); ++instance) {
-		if (((*instance)->cost3_min <= pp_top_left_cost3) && (pp_top_left_cost3 <= (*instance)->cost3_max)) {
+		if ((((*instance)->cost3_min <= pp_top_left_cost3) && (pp_top_left_cost3 <= (*instance)->cost3_max)) ||
+			(((*instance)->cost3_min <= pp_bottom_right_cost3) && (pp_bottom_right_cost3 <= (*instance)->cost3_max))) {
 			return *instance;
 		}
 	}
 
-	CostType pp_bottom_right_cost3 	= pp->get_bottom_right()->get_cost_until_now()[2];
 	PPAInstancePtr new_ppa_instance = std::make_shared<PPAInstance>(
 		std::min(pp_top_left_cost3, pp_bottom_right_cost3),
 		std::max(pp_top_left_cost3, pp_bottom_right_cost3),
@@ -139,3 +155,4 @@ PathPair::SolutionsSet PPAInstanceSet::get_solutions() {
 	return solutions;
 }
 
+#endif

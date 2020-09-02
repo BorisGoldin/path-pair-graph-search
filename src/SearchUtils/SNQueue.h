@@ -19,7 +19,8 @@ public:
     SNQueue(size_t number_of_vertices);
     bool is_empty();
     SearchNodePtr pop();
-    void insert(SearchNodePtr& pp);
+    void insert(SearchNodePtr &node);
+    std::list<SearchNodePtr>& get_open_for_node(const SearchNodePtr &node);
 };
 
 #endif //SEARCH_UTILS_SN_QUEUE_H
