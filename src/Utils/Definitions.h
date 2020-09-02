@@ -7,6 +7,7 @@
 #include <array>
 #include <iostream>
 #include <limits>
+#include <functional>
 
 // Default settings
 #ifndef DEBUG
@@ -33,8 +34,9 @@ struct Edge
     Idx                 target;
     Triplet<CostType>   cost;
 
+    Edge(Idx source, Idx target, Triplet<CostType> cost) : source(source), target(target), cost(cost) {}
     Edge inverse() {
-        return Edge({.source=this->target, .target=this->source, .cost=this->cost});
+        return Edge(this->target, this->source, this->cost);
     }
 };
 std::ostream& operator<<(std::ostream &stream, const Edge &edge);

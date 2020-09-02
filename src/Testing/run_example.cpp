@@ -17,13 +17,13 @@ void simple_test_case(LoggerPtr logger, EpsType eps) {
     std::cout << "-----Start Simple Test Case EPS=" << eps << "-----" << std::endl;
 
     std::vector<Edge> edges = {
-        {.source=1, .target=2, .cost={1,1,0}},
-        {.source=1, .target=3, .cost={1,1,0}},
-        {.source=3, .target=5, .cost={1,2,0}},
-        {.source=2, .target=5, .cost={2,2,0}},
-        {.source=2, .target=4, .cost={1,1,0}},
-        {.source=4, .target=6, .cost={2,1,0}},
-        {.source=5, .target=6, .cost={1,1,0}},
+        Edge(1, 2, {1,1,0}),
+        Edge(1, 3, {1,1,0}),
+        Edge(3, 5, {1,2,0}),
+        Edge(2, 5, {2,2,0}),
+        Edge(2, 4, {1,1,0}),
+        Edge(4, 6, {2,1,0}),
+        Edge(5, 6, {1,1,0}),
     };
 
     AdjacencyMatrix graph(6, edges);

@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <memory>
 #include "SearchNode.h"
 
 SearchNode::SearchNode(const Idx vertex_id,

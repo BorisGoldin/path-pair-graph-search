@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <set>
+#include <memory>
 #include "../Utils/Definitions.h"
 
 class SearchNode;

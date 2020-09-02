@@ -1,6 +1,7 @@
 #include <string>
 #include <vector>
 #include <fstream>
+#include <algorithm>
 #include "IOUtils.h"
 
 void string_split(std::string string, std::string delimiter, std::vector<std::string> &results)
@@ -60,11 +61,9 @@ bool load_gr_files(std::string gr_file1, std::string gr_file2, std::string gr_fi
         }
 
         if (std::strcmp(type.c_str(),"a") == 0) { //arc
-            Edge e = {
-                .source = std::stoul(decomposed_line1[1]),
-                .target = std::stoul(decomposed_line1[2]),
-                .cost   ={std::stod(decomposed_line1[3]), std::stod(decomposed_line2[3]), std::stod(decomposed_line3[3])}
-            };
+            Edge e(std::stoul(decomposed_line1[1]),
+                   std::stoul(decomposed_line1[2]),
+                   {std::stod(decomposed_line1[3]), std::stod(decomposed_line2[3]), std::stod(decomposed_line3[3])});
             edges_out.push_back(e);
             max_node_num = std::max({max_node_num, e.source, e.target});
         }
@@ -107,11 +106,9 @@ bool load_gr_files(std::string gr_file1, std::string gr_file2, std::vector<Edge>
         }
 
         if (std::strcmp(type.c_str(),"a") == 0) { //arc
-            Edge e = {
-                .source = std::stoul(decomposed_line1[1]),
-                .target = std::stoul(decomposed_line1[2]),
-                .cost   ={std::stod(decomposed_line1[3]), std::stod(decomposed_line2[3]), 0}
-            };
+            Edge e(std::stoul(decomposed_line1[1]),
+                   std::stoul(decomposed_line1[2]),
+                   {std::stod(decomposed_line1[3]), std::stod(decomposed_line2[3]), 0});
             edges_out.push_back(e);
             max_node_num = std::max({max_node_num, e.source, e.target});
         }
@@ -144,11 +141,9 @@ bool load_txt_file(std::string txt_file, std::vector<Edge> &edges_out, size_t &g
             first_line = false;
             continue;
         }
-        Edge e = {
-            .source = std::stoul(decomposed_line[0]),
-            .target = std::stoul(decomposed_line[1]),
-            .cost   ={std::stod(decomposed_line[2]), std::stod(decomposed_line[3]), 0}
-        };
+        Edge e(std::stoul(decomposed_line[0]),
+               std::stoul(decomposed_line[1]),
+               {std::stod(decomposed_line[2]), std::stod(decomposed_line[3]), 0});
         edges_out.push_back(e);
         max_node_num = std::max({max_node_num, e.source, e.target});
     }

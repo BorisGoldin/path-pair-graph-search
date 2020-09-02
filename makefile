@@ -3,7 +3,10 @@ LIBRARY = $(OUTPUT_DIR)/ppa_lib.a
 EXE = $(OUTPUT_DIR)/example
 
 CXX = g++
-CXXFLAGS = -std=c++11 -g -Wall -Wextra -pedantic -O3
+CXXFLAGS = -std=c++11 -g -O3
+CXXFLAGS += -Wall
+CXXFLAGS += -Wextra
+CXXFLAGS += -pedantic
 
 # Macro to expand files recursively: parameters $1 -  directory, $2 - extension, i.e. cpp
 rwildcard = $(wildcard $(addprefix $1/*.,$2)) $(foreach d,$(wildcard $1/*),$(call rwildcard,$d,$2))

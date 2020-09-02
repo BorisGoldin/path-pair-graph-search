@@ -20,11 +20,11 @@ std::string insert_tabs_on_newline(std::string str, size_t tabs_amount) {
 
 Logger::Logger(std::string filename): log_filestream(filename.c_str(), std::ofstream::out | std::ofstream::app) {
     this->run_start_time = Clock::now();
-};
+}
 
 Logger::~Logger() {
     this->log_filestream.close();
-};
+}
 
 // Log file is in the format:
 //
@@ -47,7 +47,7 @@ void Logger::start_search(Idx source, Idx target, std::string search_info_json) 
                          <<     "\t\"target\": " << target << ",\n"
                          <<     "\t\"search_info\": " << insert_tabs_on_newline(search_info_json,2) << ",\n"
                          <<     "\t\"events\": [" << std::endl;
-};
+}
 
 void Logger::log_event(std::string message) {
     this->run_time_since_previous_log_ms = this->total_run_duration_ms;
@@ -61,7 +61,7 @@ void Logger::log_event(std::string message) {
                          <<     "\t\t\t\"time_since_last_event\": " << this->run_time_since_previous_log_ms << ",\n"
                          <<     "\t\t\t\"event_data\": \"" << message << "\"\n"
                          <<     "\t\t}," << std::endl;
-};
+}
 
 void Logger::finish_search(std::string finish_info_json) {
     long int total_runtime_ms =

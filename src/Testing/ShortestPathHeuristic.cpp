@@ -45,7 +45,7 @@ void ShortestPathHeuristic::compute(size_t cost_idx) {
             open.insert(neighbor);
         }
     }
-};
+}
 
 
 SearchNodePtr ShortestPathHeuristic::extend_node(const SearchNodePtr& node, const Edge& edge) {
@@ -67,4 +67,4 @@ Triplet<CostType> ShortestPathHeuristic::operator()(Idx vertex_id) const {
     return Triplet<CostType>({this->shortest_path_cost[vertex_id][0],
                               this->shortest_path_cost[vertex_id][1],
                               this->shortest_path_cost[vertex_id][2]});
-};
+}

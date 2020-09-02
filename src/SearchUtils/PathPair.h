@@ -2,6 +2,7 @@
 #define SEARCH_UTILS_NODES_PATH_PAIR_H
 
 #include <set>
+#include <memory>
 #include "SearchNode.h"
 
 class PathPair;

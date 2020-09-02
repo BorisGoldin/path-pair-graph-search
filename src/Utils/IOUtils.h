@@ -1,6 +1,8 @@
 #ifndef UTILS_IO_UTILS_H
 #define UTILS_IO_UTILS_H
 
+#include <iostream>
+#include <cstring>
 #include <string>
 #include <vector>
 #include "Definitions.h"
