@@ -4,24 +4,24 @@
 #include <vector>
 #include "../Utils/Definitions.h"
 #include "../Utils/Logger.h"
-#include "../SearchUtils/BestFirstSearch.h"
-#include "../SearchUtils/SearchNode.h"
-#include "../SearchUtils/PathPair.h"
-#include "../SearchUtils/PPQueue.h"
+#include "../Utils/PPQueue.h"
 
-class PPA: public BestFirstSearch
-{
+
+class PPA {
 private:
-    Pair<EpsType>           eps;
+	const AdjacencyMatrix	&adj_matrix;
+    Pair<double>            eps;
+    const LoggerPtr			logger;
 
-    bool check_if_dominated(const PathPairPtr& pp, Idx target_vertex_id, std::vector<CostType>& min_cost2_to_vertex);
-    PathPairPtr extend_path_pair(const PathPairPtr& pp, const Edge& edge, Heuristic& heuristic);
-    void insert(PathPairPtr& pp, PPQueue& queue);
-    void merge_to_solutions(const PathPairPtr& pp, PathPair::SolutionsSet& solutions);
+    void start_logging(size_t source, size_t target);
+    void end_logging(SolutionSet &solutions);
+
+	void insert(PathPairPtr &pp, PPQueue &queue);
+	void merge_to_solutions(const PathPairPtr &pp, PPSolutionSet &solutions);
 
 public:
-    PPA(const AdjacencyMatrix& adj_matrix, Pair<EpsType> eps, LoggerPtr logger=nullptr);
-    void operator()(const Idx source_vertex_id, const Idx target_vertex_id, SearchNode::SolutionsSet& solutions, Heuristic& heuristic);
+    PPA(const AdjacencyMatrix &adj_matrix, Pair<double> eps, const LoggerPtr logger=nullptr);
+    void operator()(size_t source, size_t target, Heuristic &heuristic, SolutionSet &solutions);
 };
 
 #endif //BI_CRITERIA_PPA_H

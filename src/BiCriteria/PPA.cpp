@@ -1,38 +1,23 @@
+#include <memory>
+
 #include "PPA.h"
 
-PPA::PPA(const AdjacencyMatrix& adj_matrix, Pair<EpsType> eps, LoggerPtr logger)
-    : BestFirstSearch(adj_matrix, logger), eps(eps) {}
+PPA::PPA(const AdjacencyMatrix &adj_matrix, Pair<double> eps, const LoggerPtr logger) :
+	adj_matrix(adj_matrix), eps(eps), logger(logger) {}
 
-bool PPA::check_if_dominated(const PathPairPtr& pp, Idx target_vertex_id, std::vector<CostType>& min_path_cost2) {
-    if (pp->get_bottom_right()->get_cost_until_now()[1] >= min_path_cost2[pp->get_bottom_right()->get_vertex_id()]) {
-        LOG_INC_PATHS_PRUNED_BY_NODE();
-        return true;
-    } else if ((1 + this->eps[1] * pp->get_bottom_right()->get_full_cost()[1] >= min_path_cost2[target_vertex_id])) {
-        LOG_INC_PATHS_PRUNED_BY_SOLUTION();
-        return true;
-    } else {
-        return false;
-    }
-}
-
-PathPairPtr PPA::extend_path_pair(const PathPairPtr& pp, const Edge& edge, Heuristic& heuristic) {
-    Triplet<CostType> heuristic_cost = heuristic(edge.target);
-    return PathPair::extend(pp, edge, {heuristic_cost[0], heuristic_cost[1]});
-}
-
-void PPA::insert(PathPairPtr& pp, PPQueue& queue) {
-    std::list<PathPairPtr> &relevant_pps = queue.get_open_pps(pp->get_vertex_id());
-    for (auto p_existing_pp = relevant_pps.begin(); p_existing_pp != relevant_pps.end(); ++p_existing_pp) {
-        if ((*p_existing_pp)->is_active() == false) {
+void PPA::insert(PathPairPtr &pp, PPQueue &queue) {
+    std::vector<PathPairPtr> &relevant_pps = queue.get_open_pps(pp->id);
+    for (auto existing_pp = relevant_pps.begin(); existing_pp != relevant_pps.end(); ++existing_pp) {
+        if ((*existing_pp)->is_active == false) {
             continue;
         }
-        if (pp->update_nodes_by_merge_if_bounded(*p_existing_pp, this->eps, true) == true) {
-            // pp and *p_existing_pp were merged successfuly into pp
-            if ((pp->get_top_left() != (*p_existing_pp)->get_top_left()) || 
-                (pp->get_bottom_right() != (*p_existing_pp)->get_bottom_right())) {
-                // merged_pp != (*p_existing_pp), therefore we remove (*p_existing_pp) and insert merged_pp instead 
+        if (pp->update_nodes_by_merge_if_bounded(*existing_pp, this->eps, true) == true) {
+            // pp and *existing_pp were merged successfuly into pp
+            if ((pp->top_left != (*existing_pp)->top_left) ||
+                (pp->bottom_right != (*existing_pp)->bottom_right)) {
+                // merged_pp != (*existing_pp), therefore we remove (*existing_pp) and insert merged_pp instead
                 // (pp is not fully dominated by an opened pp)
-                (*p_existing_pp)->deactivate();
+                (*existing_pp)->is_active = false;
                 queue.insert(pp);
             }
             return;
@@ -41,7 +26,7 @@ void PPA::insert(PathPairPtr& pp, PPQueue& queue) {
     queue.insert(pp);
 }
 
-void PPA::merge_to_solutions(const PathPairPtr& pp, PathPair::SolutionsSet& solutions) {
+void PPA::merge_to_solutions(const PathPairPtr &pp, PPSolutionSet &solutions) {
     for (auto iter = solutions.begin(); iter != solutions.end(); ++iter) {
         if (pp->update_nodes_by_merge_if_bounded(*iter, this->eps, true) == true) {
             return;
@@ -50,71 +35,116 @@ void PPA::merge_to_solutions(const PathPairPtr& pp, PathPair::SolutionsSet& solu
     solutions.push_back(pp);
 }
 
-void PPA::operator()(const Idx source_vertex_id,
-                     const Idx target_vertex_id,
-                     SearchNode::SolutionsSet& solutions,
-                     Heuristic& heuristic) {
-    this->log_search_start(source_vertex_id, target_vertex_id, "PPA", {this->eps[0], this->eps[1], 0});
+void PPA::operator()(size_t source, size_t target, Heuristic &heuristic, SolutionSet &solutions) {
+    this->start_logging(source, target);
 
-    PPQueue                     open_queue(adj_matrix.get_number_of_vertices());
-    std::vector<CostType>       min_path_cost2(adj_matrix.get_number_of_vertices()+1, MAX_COST);
-    PathPair::SolutionsSet      pp_solutions;
+    PPSolutionSet pp_solutions;
+    PathPairPtr   pp;
+    PathPairPtr   next_pp;
 
-    // Add source node to open queue    
-    SearchNodePtr source_node = 
-        std::make_shared<SearchNode>(source_vertex_id, nullptr, Triplet<CostType>({0,0,0}), heuristic(source_vertex_id));
-    PathPairPtr source_pp = std::make_shared<PathPair>(source_node, source_node);
-    this->insert(source_pp, open_queue);
+    // Saving all the unused MapNodePtrs in a vector improves performace for some reason
+    std::vector<PathPairPtr> closed;
 
-    while (open_queue.is_empty() == false) {
-        LOG_INC_LOOP_COUNT();
+    // Vector to hold mininum cost of 2nd criteria per node
+    std::vector<size_t> min_g2(this->adj_matrix.size()+1, MAX_COST);
 
-        // Pop min from queue and process            
-        PathPairPtr pp = open_queue.pop();
+    // Init open heap
+    PPQueue open(this->adj_matrix.size()+1);
+
+    MapNodePtr source_node = std::make_shared<MapNode>(source, Triplet<size_t>({0,0,0}), heuristic(source));
+    pp = std::make_shared<PathPair>(source_node, source_node);
+    open.insert(pp);
+
+
+    while (open.empty() == false) {
+        // Pop min from queue and process
+        pp = open.pop();
 
         // Optimization: PathPairs are being deactivated instead of being removed so we skip them.
-        if (pp->is_active() == false) {
+        if (pp->is_active == false) {
             continue;
         }
 
-        LOG_INC_PATHS_POPPED(pp->get_vertex_id());
-
-        // Check if path pair is dominated
-        if (this->check_if_dominated(pp, target_vertex_id, min_path_cost2) == true) {
+        // Dominance check
+        if ((pp->bottom_right->g[1] >= min_g2[pp->id]) ||
+            (((1+this->eps[1])*(pp->bottom_right->g[1]+pp->bottom_right->h[1])) >= min_g2[target])) {
+            closed.push_back(pp);
             continue;
-        };
+        }
 
-        // Update to new minimal cost (pp is minimal because it wasn't dominated)
-        min_path_cost2[pp->get_vertex_id()] = pp->get_bottom_right()->get_cost_until_now()[1];
+        min_g2[pp->id] = pp->bottom_right->g[1];
 
-        // If target vertex merge to solutions
-        if (pp->get_vertex_id() == target_vertex_id) {
+        if (pp->id == target) {
             this->merge_to_solutions(pp, pp_solutions);
             continue;
         }
 
-        // Go over all neighbors and extend 
-        const std::vector<Edge>& outgoing_edges = adj_matrix[pp->get_vertex_id()];
-        for (size_t j = 0; j < outgoing_edges.size(); ++j) {
-            // Create new node
-            PathPairPtr neighbor_pp = this->extend_path_pair(pp, outgoing_edges[j], heuristic);
+        const std::vector<Edge> &outgoing_edges = adj_matrix[pp->id];
+        for(auto p_edge = outgoing_edges.begin(); p_edge != outgoing_edges.end(); p_edge++) {
+            // Prepare extension of path pair
+            size_t next_id = p_edge->target;
+            Triplet<size_t> top_left_next_g = {pp->top_left->g[0]+p_edge->cost[0],
+                                               pp->top_left->g[1]+p_edge->cost[1],
+                                               0};
+            Triplet<size_t> bottom_right_next_g = {pp->bottom_right->g[0]+p_edge->cost[0],
+                                                   pp->bottom_right->g[1]+p_edge->cost[1],
+                                                   0};
+            Triplet<size_t> next_h = heuristic(next_id);
 
-            if (neighbor_pp == nullptr) {
+            // Dominance check
+            if ((bottom_right_next_g[1] >= min_g2[next_id]) ||
+                (((1+this->eps[1])*(bottom_right_next_g[1]+next_h[1])) >= min_g2[target])) {
                 continue;
             }
-            LOG_INC_PATHS_GENERATED(neighbor_pp->get_vertex_id())
 
-            // Check if search node is dominated
-            if (this->check_if_dominated(neighbor_pp, target_vertex_id, min_path_cost2) == true) {
-                continue;
-            };
+            // Extend path pair
+            next_pp = std::make_shared<PathPair>(
+                            std::make_shared<MapNode>(next_id, top_left_next_g, next_h, pp->top_left),
+                            std::make_shared<MapNode>(next_id, bottom_right_next_g, next_h, pp->top_left));
 
-            // Add node to open list
-            this->insert(neighbor_pp, open_queue);
+            // If not dominated push to queue
+            this->insert(next_pp, open);
+            closed.push_back(pp);
         }
-        LOG_INC_PATHS_EXPANDED(pp->get_vertex_id());
     }
-    solutions = PathPair::solutions_from_path_pair_solutions(pp_solutions);
 
-    this->log_search_finish(solutions);
+    for (auto solution = pp_solutions.begin(); solution != pp_solutions.end(); ++solution) {
+        solutions.push_back((*solution)->top_left);
+    }
+
+    this->end_logging(solutions);
+}
+
+void PPA::start_logging(size_t source, size_t target) {
+    std::stringstream start_info_json;
+    start_info_json
+        << "{\n"
+        <<      "\t\"name\": \"PPA\",\n"
+        <<      "\t\"eps\": " << this->eps << "\n"
+        << "}";
+
+    LOG_START_SEARCH(*this->logger, source, target, start_info_json.str());
+}
+
+void PPA::end_logging(SolutionSet &solutions) {
+    std::stringstream finish_info_json;
+    finish_info_json
+        << "{\n"
+        <<      "\t\"solutions\": [";
+
+    size_t solutions_count = 0;
+    for (auto solution = solutions.begin(); solution != solutions.end(); ++solution) {
+        if (solution != solutions.begin()) {
+            finish_info_json << ",";
+        }
+        finish_info_json << "\n\t\t" << **solution;
+        solutions_count++;
+    }
+
+    finish_info_json
+        <<      "\n\t],\n"
+        <<      "\t\"amount_of_solutions\": " << solutions_count << "\n"
+        << "}" <<std::endl;
+
+    LOG_FINISH_SEARCH(*(this->logger), finish_info_json.str());
 }

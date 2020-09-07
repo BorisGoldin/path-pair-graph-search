@@ -1,85 +1,106 @@
+#include <memory>
+
 #include "BOAStar.h"
 
-BOAStar::BOAStar(const AdjacencyMatrix& adj_matrix, Pair<double> eps, LoggerPtr logger) 
-    : BestFirstSearch(adj_matrix, logger), eps(eps) {}
+BOAStar::BOAStar(const AdjacencyMatrix &adj_matrix, Pair<double> eps, const LoggerPtr logger) :
+	adj_matrix(adj_matrix), eps(eps), logger(logger) {}
 
-bool BOAStar::check_if_dominated(const SearchNodePtr& node, 
-                                 Idx target_vertex_id, 
-                                 std::vector<CostType>& min_path_cost2) {
-    if (node->get_cost_until_now()[1] >= min_path_cost2[node->get_vertex_id()]) {
-        LOG_INC_PATHS_PRUNED_BY_NODE();
-        return true;
-    } else if ((1 + this->eps[1] * node->get_full_cost()[1] >= min_path_cost2[target_vertex_id])) {
-        LOG_INC_PATHS_PRUNED_BY_SOLUTION();
-        return true;
-    } else {
-        return false;
-    }
-}
+void BOAStar::operator()(size_t source, size_t target, Heuristic &heuristic, SolutionSet &solutions) {
+    this->start_logging(source, target);
 
-SearchNodePtr BOAStar::extend_node(const SearchNodePtr& node, const Edge& edge, Heuristic& heuristic) {
-    return SearchNode::extend(node, edge, heuristic(edge.target));
-}
+    MapNodePtr node;
+    MapNodePtr next;
 
-void BOAStar::insert(SearchNodePtr& node, SNQueue& queue) {
-    queue.insert(node);
-}
+    // Saving all the unused MapNodePtrs in a vector improves performace for some reason
+    std::vector<MapNodePtr> closed;
 
-void BOAStar::merge_to_solutions(const SearchNodePtr& node, SearchNode::SolutionsSet& solutions) {
-    solutions.push_back(node);
-}
+    // Vector to hold mininum cost of 2nd criteria per node
+    std::vector<size_t> min_g2(this->adj_matrix.size()+1, MAX_COST);
 
-void BOAStar::operator()(Idx source_vertex_id, Idx target_vertex_id, SearchNode::SolutionsSet& solutions, Heuristic& heuristic) {
-    this->log_search_start(source_vertex_id, target_vertex_id, "BOAStar", {this->eps[0], this->eps[1], 0});
+    // Init open heap
+    MapNode::more_than_full_cost more_than;
+    std::vector<MapNodePtr> open;
+    std::make_heap(open.begin(), open.end(), more_than);
 
-    SNQueue                     open_queue(adj_matrix.get_number_of_vertices());
-    std::vector<CostType>       min_path_cost2(adj_matrix.get_number_of_vertices()+1, MAX_COST);
+    node = std::make_shared<MapNode>(source, Triplet<size_t>({0,0,0}), heuristic(source));
+    open.push_back(node);
+    std::push_heap(open.begin(), open.end(), more_than);
 
-    // Add source node to open queue    
-    SearchNodePtr source_node = std::make_shared<SearchNode>(source_vertex_id, nullptr, Triplet<CostType>({0,0,0}), heuristic(source_vertex_id));
-    this->insert(source_node, open_queue);
 
-    while (open_queue.is_empty() == false) {
-        LOG_INC_LOOP_COUNT();
-
+    while (open.empty() == false) {
         // Pop min from queue and process
-        SearchNodePtr node = open_queue.pop();
+        std::pop_heap(open.begin(), open.end(), more_than);
+        node = open.back();
+        open.pop_back();
 
-        LOG_INC_PATHS_POPPED(node->get_vertex_id());
-
-        // Check if search node is dominated
-        if (this->check_if_dominated(node, target_vertex_id, min_path_cost2) == true) {
-            continue;
-        };
-        min_path_cost2[node->get_vertex_id()] = node->get_cost_until_now()[1];
-
-
-        // If target vertex merge to solutions
-        if (node->get_vertex_id() == target_vertex_id) {
-            this->merge_to_solutions(node, solutions);
+        if ((node->g[1] >= min_g2[node->id]) ||
+            (((1+this->eps[1])*(node->g[1]+node->h[1])) >= min_g2[target])){
+            closed.push_back(node);
             continue;
         }
 
-        // Go over all neighbors and extend 
-        const std::vector<Edge>& outgoing_edges = adj_matrix[node->get_vertex_id()];
-        for (size_t i = 0; i < outgoing_edges.size(); ++i) {
-            // Create new node
-            SearchNodePtr neighbor = this->extend_node(node, outgoing_edges[i], heuristic);
-            if (neighbor == nullptr) {
+        min_g2[node->id] = node->g[1];
+
+        if (node->id == target) {
+            solutions.push_back(node);
+            continue;
+        }
+
+        const std::vector<Edge> &outgoing_edges = adj_matrix[node->id];
+        for(auto p_edge = outgoing_edges.begin(); p_edge != outgoing_edges.end(); p_edge++) {
+
+            size_t next_id = p_edge->target;
+            Triplet<size_t> next_g = {node->g[0]+p_edge->cost[0], node->g[1]+p_edge->cost[1], 0};
+            Triplet<size_t> next_h = heuristic(next_id);
+
+            if ((next_g[1] >= min_g2[next_id]) ||
+                (((1+this->eps[1])*(next_g[1]+next_h[1])) >= min_g2[target])) {
                 continue;
             }
-            LOG_INC_PATHS_GENERATED(neighbor->get_vertex_id())
 
-            // Check if search node is dominated
-            if (this->check_if_dominated(neighbor, target_vertex_id, min_path_cost2) == true) {
-                continue;
-            };
+            next = std::make_shared<MapNode>(next_id, next_g, next_h, node);
 
-            // Add node to open list
-            this->insert(neighbor, open_queue);
+            // If not dominated push to queue
+            open.push_back(next);
+            std::push_heap(open.begin(), open.end(), more_than);
+
+            closed.push_back(node);
         }
-        LOG_INC_PATHS_EXPANDED(node->get_vertex_id());
     }
 
-    this->log_search_finish(solutions);
+    this->end_logging(solutions);
+}
+
+void BOAStar::start_logging(size_t source, size_t target) {
+    std::stringstream start_info_json;
+    start_info_json
+        << "{\n"
+        <<      "\t\"name\": \"BOAStar\",\n"
+        <<      "\t\"eps\": " << this->eps << "\n"
+        << "}";
+
+    LOG_START_SEARCH(*this->logger, source, target, start_info_json.str());
+}
+
+void BOAStar::end_logging(SolutionSet &solutions) {
+    std::stringstream finish_info_json;
+    finish_info_json
+        << "{\n"
+        <<      "\t\"solutions\": [";
+
+    size_t solutions_count = 0;
+    for (auto solution = solutions.begin(); solution != solutions.end(); ++solution) {
+        if (solution != solutions.begin()) {
+            finish_info_json << ",";
+        }
+        finish_info_json << "\n\t\t" << **solution;
+        solutions_count++;
+    }
+
+    finish_info_json
+        <<      "\n\t],\n"
+        <<      "\t\"amount_of_solutions\": " << solutions_count << "\n"
+        << "}" <<std::endl;
+
+    LOG_FINISH_SEARCH(*(this->logger), finish_info_json.str());
 }

@@ -2,17 +2,17 @@
 #define UTILS_LOGGER_H
 
 #include <string>
-#include <fstream> 
+#include <fstream>
 #include <sstream>
+#include <memory>
+#include <chrono>
 #include "Definitions.h"
 
 #if (DEBUG >= 1)
 #define LOG_START_SEARCH(logger, source, target, message)   ((logger).start_search((source), (target), (message)));
-#define LOG_EVENT(logger, message)                          ((logger).log_event((message)));
 #define LOG_FINISH_SEARCH(logger, message)                  ((logger).finish_search((message)));
 #else
 #define LOG_START_SEARCH(logger, source, target, message)   ;
-#define LOG_EVENT(logger, message)                          ;
 #define LOG_FINISH_SEARCH(logger, message)                  ;
 #endif
 
@@ -33,8 +33,7 @@ private:
 public:
     Logger(std::string filename);
     ~Logger();
-    void start_search(Idx source, Idx target, std::string search_info_json);
-    void log_event(std::string message);
+    void start_search(size_t source, size_t target, std::string search_info_json);
     void finish_search(std::string finish_info_json);
 };
 
