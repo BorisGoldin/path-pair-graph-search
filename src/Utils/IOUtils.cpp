@@ -63,7 +63,8 @@ bool load_gr_files(std::string gr_file1, std::string gr_file2, std::string gr_fi
         if (std::strcmp(type.c_str(),"a") == 0) { //arc
             Edge e(std::stoul(decomposed_line1[1]),
                    std::stoul(decomposed_line1[2]),
-                   {std::stod(decomposed_line1[3]), std::stod(decomposed_line2[3]), std::stod(decomposed_line3[3])});
+                   {std::stoul(decomposed_line1[3]), std::stoul(decomposed_line2[3]), std::stoul(decomposed_line3[3])});
+                   // {std::stod(decomposed_line1[3]), std::stod(decomposed_line2[3]), std::stod(decomposed_line3[3])});
             edges_out.push_back(e);
             max_node_num = std::max({max_node_num, e.source, e.target});
         }
@@ -108,7 +109,8 @@ bool load_gr_files(std::string gr_file1, std::string gr_file2, std::vector<Edge>
         if (std::strcmp(type.c_str(),"a") == 0) { //arc
             Edge e(std::stoul(decomposed_line1[1]),
                    std::stoul(decomposed_line1[2]),
-                   {std::stod(decomposed_line1[3]), std::stod(decomposed_line2[3]), 0});
+                   {std::stoul(decomposed_line1[3]), std::stoul(decomposed_line2[3]), 0});
+                   // {std::stod(decomposed_line1[3]), std::stod(decomposed_line2[3]), 0});
             edges_out.push_back(e);
             max_node_num = std::max({max_node_num, e.source, e.target});
         }
@@ -143,7 +145,8 @@ bool load_txt_file(std::string txt_file, std::vector<Edge> &edges_out, size_t &g
         }
         Edge e(std::stoul(decomposed_line[0]),
                std::stoul(decomposed_line[1]),
-               {std::stod(decomposed_line[2]), std::stod(decomposed_line[3]), 0});
+               {std::stoul(decomposed_line[2]), std::stoul(decomposed_line[3]), 0});
+               // {std::stod(decomposed_line[2]), std::stod(decomposed_line[3]), 0});
         edges_out.push_back(e);
         max_node_num = std::max({max_node_num, e.source, e.target});
     }
@@ -151,7 +154,7 @@ bool load_txt_file(std::string txt_file, std::vector<Edge> &edges_out, size_t &g
     return true;
 }
 
-bool load_queries(std::string query_file, std::vector<std::pair<Idx, Idx>> &queries_out) {
+bool load_queries(std::string query_file, std::vector<std::pair<size_t, size_t>> &queries_out) {
     std::ifstream   file(query_file.c_str());
 
     if (file.is_open() == false) {
@@ -173,7 +176,7 @@ bool load_queries(std::string query_file, std::vector<std::pair<Idx, Idx>> &quer
             continue;
         }
 
-        std::pair<Idx, Idx> query = {std::stoul(decomposed_line[0]), std::stoul(decomposed_line[1])};
+        std::pair<size_t, size_t> query = {std::stoul(decomposed_line[0]), std::stoul(decomposed_line[1])};
         queries_out.push_back(query);
     }
     return true;

@@ -4,23 +4,19 @@
 #include <vector>
 #include "../Utils/Definitions.h"
 #include "../Utils/Logger.h"
-#include "../SearchUtils/BestFirstSearch.h"
-#include "../SearchUtils/SearchNode.h"
-#include "../SearchUtils/SNQueue.h"
 
-class BOAStar: public BestFirstSearch
-{
+class BOAStar {
 private:
-    Pair<EpsType>           eps;
+	const AdjacencyMatrix	&adj_matrix;
+    Pair<double>            eps;
+    const LoggerPtr			logger;
 
-    void merge_to_solutions(const SearchNodePtr &node, SearchNode::SolutionsSet &solutions);
-    bool check_if_dominated(const SearchNodePtr &node, Idx target_vertex_id, std::vector<CostType> &min_path_cost2);
-    SearchNodePtr extend_node(const SearchNodePtr &node, const Edge edge, Heuristic &heuristic);
-    void insert(SearchNodePtr &node, SNQueue &queue);
+    void start_logging(size_t source, size_t target);
+    void end_logging(SolutionSet &solutions);
 
 public:
-    BOAStar(const AdjacencyMatrix &adj_matrix, Pair<EpsType> eps, const LoggerPtr &logger=nullptr);
-    void operator()(Idx source_vertex_id, Idx target_vertex_id, SearchNode::SolutionsSet &solutions, Heuristic &heuristic);
+    BOAStar(const AdjacencyMatrix &adj_matrix, Pair<double> eps, const LoggerPtr logger=nullptr);
+    void operator()(size_t source, size_t target, Heuristic &heuristic, SolutionSet &solutions);
 };
 
 #endif //BI_CRITERIA_BOA_STAR_H

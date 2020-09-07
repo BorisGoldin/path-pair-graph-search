@@ -6,7 +6,7 @@ CXX = g++
 CXXFLAGS = -std=c++11 -g -O3
 CXXFLAGS += -Wall
 CXXFLAGS += -Wextra
-CXXFLAGS += -pedantic
+CXXFLAGS +	= -pedantic
 
 # Macro to expand files recursively: parameters $1 -  directory, $2 - extension, i.e. cpp
 rwildcard = $(wildcard $(addprefix $1/*.,$2)) $(foreach d,$(wildcard $1/*),$(call rwildcard,$d,$2))
