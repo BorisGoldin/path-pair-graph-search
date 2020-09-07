@@ -11,7 +11,7 @@ Includes the following search algorithms:
   * Tri Criteria:
 
 TODOs
-  * BOAStar + PPA makes results similar to C code.
+  * Tri Criteria POC
   * Validation and testing using python and json log outputs.
   * Proper documentation in README file
 
