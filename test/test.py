@@ -11,7 +11,7 @@ LOGS_UNDER_TEST = {
     "queries_BAY_log.json": "queries_BAY_optimal_log.json",
     "queries_COL_log.json": "queries_COL_optimal_log.json",
     "queries_NE_log.json": "queries_NE_optimal_log.json",
-    # "queries_NY_log.json": "queries_NY_optimal_log.json",
+    "queries_NY_log.json": "queries_NY_optimal_log.json",
 }
 
 
@@ -22,9 +22,8 @@ def run_test(under_test_root, result_filename=None):
         log_file = under_test_root+log
         opt_log_file = RESOURCE_ROOT+LOGS_UNDER_TEST[log]
 
-        # boastar_fails = test_log_file(log_file, opt_log_file, "BOAStar")
+        boastar_fails = test_log_file(log_file, opt_log_file, "BOAStar")
         ppa_fails = test_log_file(log_file, opt_log_file, "PPA")
-        boastar_fails = {}
 
         if ((len(boastar_fails) != 0) or (len(ppa_fails) != 0)):
             failures[log] = {"BOAStar": boastar_fails, "PPA": ppa_fails}
