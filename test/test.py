@@ -38,7 +38,7 @@ def run_test(under_test_root, result_filename=None):
 
 def test_log_file(log_file, opt_log_file, algo_name):
     log_dict = log_file_to_test_dict(log_file, algo_name)
-    opt_log_dict = log_file_to_test_dict(opt_log_file)
+    opt_log_dict = log_file_to_test_dict(opt_log_file, "CBOAStar")
 
     failures = {}
     for src_dest in opt_log_dict:
