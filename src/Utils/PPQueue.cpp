@@ -1,7 +1,10 @@
+#include <algorithm>
+
 #include "PPQueue.h"
 
 PPQueue::PPQueue(size_t graph_size)
     : open_map(graph_size, std::vector<PathPairPtr>()) {
+
     std::make_heap(this->heap.begin(), this->heap.end(), this->more_than);
 }
 

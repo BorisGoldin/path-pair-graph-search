@@ -8,19 +8,16 @@
 #include <iostream>
 #include <limits>
 #include <functional>
+#include <memory>
 
-#define BORIS_LOG 1
 
-#ifdef BORIS_LOG
-#include <sys/time.h>
-#endif //BORIS_LOG
-
-// Default settings
 #ifndef DEBUG
-#define DEBUG 2
+    #define DEBUG 1
 #endif
 
+
 const size_t MAX_COST = std::numeric_limits<size_t>::max();
+
 
 template<typename T>
 using Pair      = std::array<T, 2>;
@@ -32,26 +29,16 @@ std::ostream& operator<<(std::ostream &stream, const Pair<T> pair) {
 }
 
 
-template<typename T>
-using Triplet   = std::array<T, 3>;
-
-template<typename T>
-std::ostream& operator<<(std::ostream &stream, const Triplet<T> triplet) {
-    stream << "[" << triplet[0] << ", " << triplet[1] << ", " << triplet[2] << "]";
-    return stream;
-}
-
-
-using Heuristic = std::function<Triplet<size_t>(size_t)>;
+using Heuristic = std::function<Pair<size_t>(size_t)>;
 
 
 // Structs and classes
 struct Edge {
-    size_t                 source;
-    size_t                 target;
-    Triplet<size_t>   cost;
+    size_t          source;
+    size_t          target;
+    Pair<size_t>    cost;
 
-    Edge(size_t source, size_t target, Triplet<size_t> cost) : source(source), target(target), cost(cost) {}
+    Edge(size_t source, size_t target, Pair<size_t> cost) : source(source), target(target), cost(cost) {}
     Edge inverse() {
         return Edge(this->target, this->source, this->cost);
     }
@@ -59,6 +46,7 @@ struct Edge {
 std::ostream& operator<<(std::ostream &stream, const Edge &edge);
 
 
+// Graph representation as adjacency matrix
 class AdjacencyMatrix {
 private:
     std::vector<std::vector<Edge>> matrix;
@@ -75,49 +63,50 @@ public:
 };
 
 
-struct MapNode;
+struct Node;
 struct PathPair;
-using MapNodePtr = std::shared_ptr<MapNode>;
-using PathPairPtr = std::shared_ptr<PathPair>;
-using SolutionSet = std::vector<MapNodePtr>;
+using NodePtr       = std::shared_ptr<Node>;
+using PathPairPtr   = std::shared_ptr<PathPair>;
+using SolutionSet   = std::vector<NodePtr>;
 using PPSolutionSet = std::vector<PathPairPtr>;
 
-struct MapNode {
+
+struct Node {
     size_t          id;
-    Triplet<size_t> g;
-    Triplet<size_t> h;
-    MapNodePtr      parent;
+    Pair<size_t>    g;
+    Pair<size_t>    h;
+    Pair<size_t>    f;
+    NodePtr         parent;
 
-    MapNode(size_t id, Triplet<size_t> g, Triplet<size_t> h, MapNodePtr parent=nullptr)
-        : id(id), g(g), h(h), parent(parent) {};
-
-    Triplet<size_t> f(void) const ;
+    Node(size_t id, Pair<size_t> g, Pair<size_t> h, NodePtr parent=nullptr)
+        : id(id), g(g), h(h), f({g[0]+h[0],g[1]+h[1]}), parent(parent) {};
 
     struct more_than_specific_heurisitic_cost {
         size_t cost_idx;
 
         more_than_specific_heurisitic_cost(size_t cost_idx) : cost_idx(cost_idx) {};
-        bool operator()(const MapNodePtr &a, const MapNodePtr &b) const;
+        bool operator()(const NodePtr &a, const NodePtr &b) const;
     };
 
     struct more_than_full_cost {
-        bool operator()(const MapNodePtr &a, const MapNodePtr &b) const;
+        bool operator()(const NodePtr &a, const NodePtr &b) const;
     };
 
-    friend std::ostream& operator<<(std::ostream &stream, const MapNode &node);
+    friend std::ostream& operator<<(std::ostream &stream, const Node &node);
 };
 
-struct PathPair {
-    size_t         id;
-    MapNodePtr     top_left;
-    MapNodePtr     bottom_right;
-    MapNodePtr     parent;
-    bool           is_active=true;
 
-    PathPair(const MapNodePtr &top_left, const MapNodePtr &bottom_right)
+struct PathPair {
+    size_t      id;
+    NodePtr     top_left;
+    NodePtr     bottom_right;
+    NodePtr     parent;
+    bool        is_active=true;
+
+    PathPair(const NodePtr &top_left, const NodePtr &bottom_right)
         : id(top_left->id), top_left(top_left), bottom_right(bottom_right), parent(top_left->parent) {};
 
-    bool update_nodes_by_merge_if_bounded(const PathPairPtr &other, const Pair<double> eps, bool use_heuristic);
+    bool update_nodes_by_merge_if_bounded(const PathPairPtr &other, const Pair<double> eps);
 
     struct more_than_full_cost {
         bool operator()(const PathPairPtr &a, const PathPairPtr &b) const;

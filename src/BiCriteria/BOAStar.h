@@ -7,9 +7,9 @@
 
 class BOAStar {
 private:
-	const AdjacencyMatrix	&adj_matrix;
+    const AdjacencyMatrix   &adj_matrix;
     Pair<double>            eps;
-    const LoggerPtr			logger;
+    const LoggerPtr         logger;
 
     void start_logging(size_t source, size_t target);
     void end_logging(SolutionSet &solutions);
