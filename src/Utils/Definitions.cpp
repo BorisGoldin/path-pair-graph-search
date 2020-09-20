@@ -1,7 +1,6 @@
 #include <iostream>
-#include <map>
 #include <set>
-#include <vector>
+
 #include "Definitions.h"
 
 AdjacencyMatrix::AdjacencyMatrix(size_t graph_size, std::vector<Edge> &edges, bool inverse)
@@ -20,6 +19,7 @@ AdjacencyMatrix::AdjacencyMatrix(size_t graph_size, std::vector<Edge> &edges, bo
 void AdjacencyMatrix::add(Edge edge) {
     (this->matrix[edge.source]).push_back(edge);
 }
+
 
 size_t AdjacencyMatrix::size() const {return this->graph_size;}
 
@@ -47,8 +47,8 @@ std::ostream& operator<<(std::ostream &stream, const AdjacencyMatrix &adj_matrix
     return stream;
 }
 
-
 std::ostream& operator<<(std::ostream &stream, const Edge &edge) {
+    // Printed in JSON format
     stream
         << "{"
         <<  "\"edge_source\": " << edge.source << ", "
@@ -60,28 +60,22 @@ std::ostream& operator<<(std::ostream &stream, const Edge &edge) {
 }
 
 
-Triplet<size_t> MapNode::f(void) const {
-    return Triplet<size_t>({this->g[0]+this->h[0], this->g[1]+this->h[1], this->g[2]+this->h[2]});
-}
-
-
-bool MapNode::more_than_specific_heurisitic_cost::operator()(const MapNodePtr &a, const MapNodePtr &b) const {
+bool Node::more_than_specific_heurisitic_cost::operator()(const NodePtr &a, const NodePtr &b) const {
     return (a->h[cost_idx] > b->h[cost_idx]);
 }
 
 
-bool MapNode::more_than_full_cost::operator()(const MapNodePtr &a, const MapNodePtr &b) const {
-    if (a->f()[0] != b->f()[0]) {
-        return (a->f()[0] > b->f()[0]);
-    } else if (a->f()[1] != b->f()[1]) {
-        return (a->f()[1] > b->f()[1]);
+bool Node::more_than_full_cost::operator()(const NodePtr &a, const NodePtr &b) const {
+    if (a->f[0] != b->f[0]) {
+        return (a->f[0] > b->f[0]);
     } else {
-        return (a->f()[2] > b->f()[2]);
+        return (a->f[1] > b->f[1]);
     }
 }
 
 
-std::ostream& operator<<(std::ostream &stream, const MapNode &node) {
+std::ostream& operator<<(std::ostream &stream, const Node &node) {
+    // Printed in JSON format
     std::string parent_id = node.parent == nullptr ? "-1" : std::to_string(node.parent->id);
     stream
         << "{"
@@ -89,44 +83,34 @@ std::ostream& operator<<(std::ostream &stream, const MapNode &node) {
         <<      "\"parent\": " << parent_id << ", "
         <<      "\"cost_until_now\": " << node.g << ", "
         <<      "\"heuristic_cost\": " << node.h << ", "
-        <<      "\"full_cost\": " << node.f()
+        <<      "\"full_cost\": " << node.f
         << "}";
     return stream;
 }
 
-
-bool PathPair::update_nodes_by_merge_if_bounded(const PathPairPtr &other, const Pair<double> eps, bool use_heuristic) {
+bool PathPair::update_nodes_by_merge_if_bounded(const PathPairPtr &other, const Pair<double> eps) {
+    // Returns true on sucessful merge and false if it failure
     if (this->id != other->id) {
         return false;
     }
 
-    Triplet<size_t> this_top_left_cost = use_heuristic ? this->top_left->f() : this->top_left->g;
-    Triplet<size_t> other_top_left_cost = use_heuristic ? other->top_left->f() : other->top_left->g;
-    Triplet<size_t> this_bottom_right_cost = use_heuristic ? this->bottom_right->f() : this->bottom_right->g;
-    Triplet<size_t> other_bottom_right_cost = use_heuristic ? other->bottom_right->f() : other->bottom_right->g;
-
-    MapNodePtr new_top_left;
-    MapNodePtr new_bottom_right;
+    NodePtr new_top_left;
+    NodePtr new_bottom_right;
 
     // Pick node with min cost1 (min cost2 if equal)
-    if ((this_top_left_cost[0] < other_top_left_cost[0]) ||
-        ((this_top_left_cost[0] == other_top_left_cost[0]) && (this_top_left_cost[1] < other_top_left_cost[1]))) {
+    if ((this->top_left->f[0] < other->top_left->f[0]) ||
+        ((this->top_left->f[0] == other->top_left->f[0]) && (this->top_left->f[1] < other->top_left->f[1]))) {
         new_top_left = this->top_left;
     } else {
         new_top_left = other->top_left;
     }
 
     // Pick node with min cost2 (min cost1 if equal)
-    if ((this_bottom_right_cost[1] < other_bottom_right_cost[1]) ||
-        ((this_bottom_right_cost[1] == other_bottom_right_cost[1]) && (this_bottom_right_cost[0] < other_bottom_right_cost[0]))) {
+    if ((this->bottom_right->f[1] < other->bottom_right->f[1]) ||
+        ((this->bottom_right->f[1] == other->bottom_right->f[1]) && (this->bottom_right->f[0] < other->bottom_right->f[0]))) {
         new_bottom_right = this->bottom_right;
     } else {
         new_bottom_right = other->bottom_right;
-    }
-
-    // If path pair wasn't changed, no need for bound check
-    if ((new_top_left == this->top_left) && (new_bottom_right == this->bottom_right)) {
-        return true;
     }
 
     // Check if path pair is bounded after merge - if not the merge is illegal
@@ -142,19 +126,15 @@ bool PathPair::update_nodes_by_merge_if_bounded(const PathPairPtr &other, const 
 
 
 bool PathPair::more_than_full_cost::operator()(const PathPairPtr &a, const PathPairPtr &b) const {
-    size_t f1_a = a->top_left->g[0] + a->top_left->h[0];
-    size_t f1_b = b->top_left->g[0] + b->top_left->h[0];
-    size_t f2_a = a->bottom_right->g[1] + a->bottom_right->h[1];
-    size_t f2_b = b->bottom_right->g[1] + b->bottom_right->h[1];
-
-    if (f1_a != f1_b) {
-        return (f1_a > f1_b);
+    if (a->top_left->f[0] != b->top_left->f[0]) {
+        return (a->top_left->f[0] > b->top_left->f[0]);
     } else {
-        return (f2_a > f2_b);
+        return (a->bottom_right->f[1] > b->bottom_right->f[1]);
     }
 }
 
 std::ostream& operator<<(std::ostream &stream, const PathPair &pp) {
+    // Printed in JSON format
     stream << "{" << pp.top_left << ", " << pp.bottom_right << "}";
     return stream;
 }

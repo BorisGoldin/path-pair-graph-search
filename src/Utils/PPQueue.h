@@ -21,6 +21,7 @@ public:
     PathPairPtr pop();
     void insert(PathPairPtr &pp);
     std::vector<PathPairPtr> &get_open_pps(size_t id);
+
 };
 
 #endif //UTILS_PP_QUEUE_H

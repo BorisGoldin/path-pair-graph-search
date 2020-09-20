@@ -22,6 +22,8 @@ using TimePoint = std::chrono::time_point<Clock>;
 class Logger;
 using LoggerPtr = std::shared_ptr<Logger>;
 
+// All logging is done in JSON format. This in order to work with formal format
+// and allow simple connection to other frameworks/languages
 class Logger
 {
 private:
@@ -29,6 +31,7 @@ private:
     long int        total_run_duration_ms           = 0;
     long int        run_time_since_previous_log_ms  = 0;
     std::ofstream   log_filestream;
+    bool            first_entry;
 
 public:
     Logger(std::string filename);

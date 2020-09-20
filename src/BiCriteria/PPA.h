@@ -1,7 +1,6 @@
 #ifndef BI_CRITERIA_PPA_H
 #define BI_CRITERIA_PPA_H
 
-#include <vector>
 #include "../Utils/Definitions.h"
 #include "../Utils/Logger.h"
 #include "../Utils/PPQueue.h"
