@@ -28,11 +28,16 @@ def analyize_averages(filename, output_format="csv"):
                 "max_runtime": 0,
             }
 
-        analysis[eps][algo]["queries_count"] += 1
-        analysis[eps][algo]["total_solutions"] += log["finish_info"]["amount_of_solutions"]
+        amount_of_solutions = log["finish_info"]["amount_of_solutions"]
+        if algo == "PPA": # PPA logs both solutions in each path pair
+            amount_of_solutions /= 2
+
+        analysis[eps][algo]["total_solutions"] += amount_of_solutions
         analysis[eps][algo]["total_runtime"] += log["total_runtime(ms)"]
         analysis[eps][algo]["min_runtime"] = min(analysis[eps][algo]["min_runtime"], log["total_runtime(ms)"])
         analysis[eps][algo]["max_runtime"] = max(analysis[eps][algo]["max_runtime"], log["total_runtime(ms)"])
+        analysis[eps][algo]["queries_count"] += 1
+
 
     for eps in analysis:
         for algo in analysis[eps]:
