@@ -8,15 +8,15 @@
 
 class PPA {
 private:
-	const AdjacencyMatrix	&adj_matrix;
+    const AdjacencyMatrix   &adj_matrix;
     Pair<double>            eps;
-    const LoggerPtr			logger;
+    const LoggerPtr         logger;
 
     void start_logging(size_t source, size_t target);
     void end_logging(SolutionSet &solutions);
 
-	void insert(PathPairPtr &pp, PPQueue &queue);
-	void merge_to_solutions(const PathPairPtr &pp, PPSolutionSet &solutions);
+    void insert(PathPairPtr &pp, PPQueue &queue);
+    void merge_to_solutions(const PathPairPtr &pp, PPSolutionSet &solutions);
 
 public:
     PPA(const AdjacencyMatrix &adj_matrix, Pair<double> eps, const LoggerPtr logger=nullptr);

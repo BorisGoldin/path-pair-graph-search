@@ -25,7 +25,7 @@ std::string insert_tabs_on_newline(std::string str, size_t tabs_amount) {
 
 
 Logger::Logger(std::string filename)
-	: log_filestream(filename.c_str(), std::ofstream::out | std::ofstream::app), first_entry(true) {
+    : log_filestream(filename.c_str(), std::ofstream::out | std::ofstream::app), first_entry(true) {
     this->run_start_time = Clock::now();
     this->log_filestream << "[" << std::endl; // Start list of logs
 }

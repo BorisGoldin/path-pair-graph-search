@@ -65,9 +65,9 @@ public:
 
 struct Node;
 struct PathPair;
-using NodePtr = std::shared_ptr<Node>;
-using PathPairPtr = std::shared_ptr<PathPair>;
-using SolutionSet = std::vector<NodePtr>;
+using NodePtr       = std::shared_ptr<Node>;
+using PathPairPtr   = std::shared_ptr<PathPair>;
+using SolutionSet   = std::vector<NodePtr>;
 using PPSolutionSet = std::vector<PathPairPtr>;
 
 

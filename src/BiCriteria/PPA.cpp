@@ -5,7 +5,7 @@
 
 
 PPA::PPA(const AdjacencyMatrix &adj_matrix, Pair<double> eps, const LoggerPtr logger) :
-	adj_matrix(adj_matrix), eps(eps), logger(logger) {}
+    adj_matrix(adj_matrix), eps(eps), logger(logger) {}
 
 
 void PPA::insert(PathPairPtr &pp, PPQueue &queue) {
