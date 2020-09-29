@@ -2,7 +2,7 @@
 #include <fstream>
 #include <chrono>
 #include <string>
-#include <sys/time.h>
+#include <ctime>
 #include "Logger.h"
 
 // All logging is done in JSON format. This in order to work with formal format

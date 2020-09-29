@@ -1,6 +1,6 @@
 #include <iostream>
 #include <set>
-
+#include <string>
 #include "Definitions.h"
 
 AdjacencyMatrix::AdjacencyMatrix(size_t graph_size, std::vector<Edge> &edges, bool inverse)
