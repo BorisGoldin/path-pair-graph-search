@@ -20,7 +20,7 @@ using Clock     = std::chrono::high_resolution_clock;
 using TimePoint = std::chrono::time_point<Clock>;
 
 class Logger;
-using LoggerPtr = std::shared_ptr<Logger>;
+using LoggerPtr = Logger*;
 
 // All logging is done in JSON format. This in order to work with formal format
 // and allow simple connection to other frameworks/languages
