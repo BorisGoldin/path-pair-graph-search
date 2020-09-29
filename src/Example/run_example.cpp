@@ -115,40 +115,42 @@ void run_queries(std::string map, double eps, LoggerPtr logger) {
 // Run all queries on all availible maps. The logs outputed from this function are
 // used for running the tests
 void run_all_queries(void) {
-    LoggerPtr logger_bay = std::make_shared<Logger>("queries_BAY_log.json");
-    LoggerPtr logger_col = std::make_shared<Logger>("queries_COL_log.json");
-    LoggerPtr logger_ne = std::make_shared<Logger>("queries_NE_log.json");
-    LoggerPtr logger_ny = std::make_shared<Logger>("queries_NY_log.json");
-
-
+    LoggerPtr logger_bay = new Logger("queries_BAY_log.json");
     run_queries("BAY", 0.1, logger_bay);
     run_queries("BAY", 0.05, logger_bay);
     run_queries("BAY", 0.025, logger_bay);
     run_queries("BAY", 0.01, logger_bay);
     run_queries("BAY", 0, logger_bay);
+    delete logger_bay;
 
+    LoggerPtr logger_col = new Logger("queries_COL_log.json");
     run_queries("COL", 0.1, logger_col);
     run_queries("COL", 0.05, logger_col);
     run_queries("COL", 0.025, logger_col);
     run_queries("COL", 0.01, logger_col);
     run_queries("COL", 0, logger_col);
+    delete logger_col;
 
+    LoggerPtr logger_ne = new Logger("queries_NE_log.json");
     run_queries("NE", 0.1, logger_ne);
     run_queries("NE", 0.05, logger_ne);
     run_queries("NE", 0.025, logger_ne);
     run_queries("NE", 0.01, logger_ne);
     run_queries("NE", 0, logger_ne);
+    delete logger_ne;
 
+    LoggerPtr logger_ny = new Logger("queries_NY_log.json");
     run_queries("NY", 0.1, logger_ny);
     run_queries("NY", 0.05, logger_ny);
     run_queries("NY", 0.025, logger_ny);
     run_queries("NY", 0.01, logger_ny);
     run_queries("NY", 0, logger_ny);
+    delete logger_ny;
 }
 
 
 int main(void) {
-    LoggerPtr logger = std::make_shared<Logger>("example_log.json");
+    LoggerPtr logger = new Logger("example_log.json");
     // Easy - Benchmark C_BOA code gets around 20ms
     size_t easy_source = 9899;
     size_t easy_target = 7857;
@@ -158,6 +160,7 @@ int main(void) {
     size_t hard_source = 180834;
     size_t hard_target = 83150;
     single_run_ny_map(hard_source, hard_target, 0, logger);
+    delete logger;
 
     // try {
     //     run_all_queries();
